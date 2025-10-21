@@ -1,0 +1,58 @@
+// server.js
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Fake in-memory database
+let users = [];
+let rides = [];
+
+// ---------------- USER SIGN UP ----------------
+app.post("/api/signup", (req, res) => {
+  const { name, email, password } = req.body;
+  const existingUser = users.find(u => u.email === email);
+
+  if (existingUser) {
+    return res.status(400).json({ message: "Email already exists" });
+  }
+
+  users.push({ name, email, password });
+  res.json({ message: "Account created successfully!" });
+});
+
+// ---------------- USER SIGN IN ----------------
+app.post("/api/signin", (req, res) => {
+  const { email, password } = req.body;
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  res.json({ message: `Welcome back, ${user.name}!` });
+});
+
+// ---------------- OFFER RIDE ----------------
+app.post("/api/offer-ride", (req, res) => {
+  const ride = req.body;
+  rides.push(ride);
+  res.json({ message: "Ride posted successfully!" });
+});
+
+// ---------------- FIND RIDE ----------------
+app.post("/api/find-ride", (req, res) => {
+  const { from, to, date } = req.body;
+  const found = rides.filter(
+    r => r.from === from && r.to === to && r.date === date
+  );
+  res.json(found);
+});
+
+// ---------------- START SERVER ----------------
+app.listen(3000, () => {
+  console.log("Server running on http://localhost:3000");
+});
